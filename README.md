@@ -1,13 +1,20 @@
 # Kolocash
 
-The Kolocash ($KOLO) Smart Contract is designed to establish a sovereign digital currency for Africa and its diaspora, ensuring financial independence and economic integration. Built on the Polygon blockchain, KOLO incorporates mechanisms to manage liquidity, fund development projects, and enhance financial transparency.
+KOLOCASH (KOLO) is a digital currency launched on the Polygon blockchain, designed to finance infrastructure and projects geared towards Africa, while forming part of a dynamic of open and equitable cooperation on a global scale.
 
-The contract defines a total supply of 100 billion KOLOs, which is minted at deployment. It implements a 4% transaction tax, distributed across different purposes:
+Much more than a speculative cryptocurrency, KOLOCASH aims to be a genuine lever for sustainable economic development, serving small and medium-sized enterprises, associations, NGOs and any initiative with a strong social impact.
+
+In a changing world where the major powers are reassessing their priorities, KOLOCASH offers the opportunity to strengthen economic autonomy and foster endogenous development, while participating in a global ecosystem of cooperation.
+
+The project aims to create an environment where local resources are mobilized to meet the real needs of communities, in the interests of the planet and all its inhabitants.
+
+## Smart contract
+
+The contract defines a total supply of 100 billion KOLOs, which is minted at deployment. It implements a 3% transaction tax, distributed across different purposes:
 
 - 1% is allocated to liquidity, ensuring price stability and reducing volatility on decentralized exchanges (DEXs).
 - 1% is burned, gradually reducing the token supply to create scarcity and support long-term value.
 - 1% is allocated to the impact wallet, which funds microfinance, infrastructure, education, and intra-African trade initiatives.
-- 1% is managed through the treasury wallet, supporting ongoing project development.
 
 To ensure decentralized governance, KOLO implements a DAO-controlled fund management system. The contract initially assigns the treasury, liquidity, and impact wallets, but these can only be updated by a designated DAO smart contract. This guarantees that future changes in fund allocation will be decided by the KOLO community rather than a centralized entity.
 
