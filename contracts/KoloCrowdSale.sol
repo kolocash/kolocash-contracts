@@ -2,98 +2,90 @@
 pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
- * @title KoloCrowdSale
- * @dev Contrat de vente de tokens KOLO contre POL sur le réseau Polygon.
+ * @title KOLO Crowdsale
+ * @notice Allows users to purchase KOLO tokens by sending POL tokens (formerly MATIC).
+ * @dev This contract should be deployed separately from the main KOLOCASH token contract.
  */
-contract KoloCrowdSale is Ownable, ReentrancyGuard {
-    IERC20 public kolocashToken; // Adresse du token KOLO
-    uint256 public rate = 20 * 10 ** 18; // Taux de conversion (1 POL = 20 KOLO)
-    uint256 public polygonRaised; // Montant total collecté en POL
+contract KoloCrowdsale is Ownable {
+    IERC20 public koloToken; // KOLO token being sold
+    uint256 public rate; // How many KOLO tokens a buyer gets per POL
+    bool public saleActive; // Status of the Crowdsale
 
-    /**
-     * @dev Événement déclenché lors de l'achat de tokens.
-     * @param purchaser Adresse de l'acheteur
-     * @param amount Montant de tokens achetés
-     * @param cost Montant payé en POL
-     */
     event TokensPurchased(
-        address indexed purchaser,
-        uint256 amount,
-        uint256 cost
+        address indexed buyer,
+        uint256 polAmount,
+        uint256 koloAmount
     );
 
     /**
-     * @dev Constructeur du contrat.
-     * @param _kolocashToken Adresse du contrat du token KOLO
+     * @dev Constructor sets the KOLO token address and initial exchange rate.
+     * @param _koloToken Address of the KOLO ERC20 token
+     * @param _rate Number of KOLO tokens per POL token
      */
-    constructor(IERC20 _kolocashToken) Ownable(msg.sender) {
-        require(
-            address(_kolocashToken) != address(0),
-            "Adresse du token invalide"
-        );
-
-        kolocashToken = _kolocashToken;
+    constructor(address _koloToken, uint256 _rate) Ownable(msg.sender) {
+        require(_rate > 0, "Rate must be greater than zero");
+        koloToken = IERC20(_koloToken);
+        rate = _rate;
+        saleActive = true;
     }
 
     /**
-     * @dev Met à jour le taux de conversion.
-     * @param _newRate Le nouveau taux de conversion (nombre de KOLO par POL)
-     */
-    function setRate(uint256 _newRate) external onlyOwner {
-        require(_newRate > 0, "Le nouveau taux doit etre superieur a zero");
-        rate = _newRate;
-    }
-
-    /**
-     * @dev Fonction fallback pour recevoir des fonds et acheter des tokens.
+     * @notice Receive function to handle direct POL transfers to the contract
      */
     receive() external payable {
         buyTokens();
     }
 
     /**
-     * @dev Fonction principale pour acheter des tokens KOLO.
+     * @notice Public function to purchase KOLO tokens by sending POL
      */
-    function buyTokens() public payable nonReentrant {
-        uint256 polygonAmount = msg.value;
-        require(polygonAmount > 0, "Vous devez envoyer des fonds");
+    function buyTokens() public payable {
+        require(saleActive, "Crowdsale is currently inactive");
+        require(msg.value > 0, "You must send some POL to purchase KOLO");
 
-        uint256 tokens = _getTokenAmount(polygonAmount);
+        uint256 koloAmount = msg.value * rate;
         require(
-            kolocashToken.balanceOf(address(this)) >= tokens,
-            "Pas assez de tokens dans le contrat"
+            koloToken.balanceOf(address(this)) >= koloAmount,
+            "Not enough KOLO tokens available in Crowdsale"
         );
 
-        polygonRaised += polygonAmount;
-
-        kolocashToken.transfer(msg.sender, tokens);
-        emit TokensPurchased(msg.sender, tokens, polygonAmount);
-
-        payable(owner()).transfer(polygonAmount);
+        koloToken.transfer(msg.sender, koloAmount);
+        emit TokensPurchased(msg.sender, msg.value, koloAmount);
     }
 
     /**
-     * @dev Calcul du nombre de tokens en fonction du montant envoyé.
-     * @param polygonAmount Montant envoyé en POL
-     * @return Nombre de tokens à transférer
+     * @notice Withdraw collected POL funds to the owner's wallet
      */
-    function _getTokenAmount(
-        uint256 polygonAmount
-    ) internal view returns (uint256) {
-        return polygonAmount * rate;
+    function withdrawFunds() external onlyOwner {
+        payable(owner()).transfer(address(this).balance);
     }
 
     /**
-     * @dev Retrait des tokens non vendus par le propriétaire.
+     * @notice Withdraw unsold KOLO tokens back to the owner's wallet after Crowdsale
      */
-    function withdrawTokens() external onlyOwner {
-        uint256 remainingTokens = kolocashToken.balanceOf(address(this));
-        require(remainingTokens > 0, "Aucun token a retirer");
+    function withdrawUnsoldTokens() external onlyOwner {
+        uint256 remainingKolo = koloToken.balanceOf(address(this));
+        require(remainingKolo > 0, "No KOLO tokens remaining");
+        koloToken.transfer(owner(), remainingKolo);
+    }
 
-        kolocashToken.transfer(owner(), remainingTokens);
+    /**
+     * @notice Activate or deactivate the Crowdsale
+     * @param _active Boolean to activate (true) or deactivate (false)
+     */
+    function setSaleActive(bool _active) external onlyOwner {
+        saleActive = _active;
+    }
+
+    /**
+     * @notice Adjust the exchange rate of KOLO tokens per POL
+     * @param _newRate The new rate for KOLO/POL
+     */
+    function setRate(uint256 _newRate) external onlyOwner {
+        require(_newRate > 0, "Rate must be greater than zero");
+        rate = _newRate;
     }
 }

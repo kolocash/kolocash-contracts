@@ -4,6 +4,7 @@ require("@openzeppelin/hardhat-upgrades");
 // npx hardhat vars list
 // npx hardhat vars set TEST_API_KEY
 const INFURA_API_KEY = vars.get("INFURA_API_KEY");
+const POLYGONSCAN_AMOY_API_KEY = vars.get("POLYGONSCAN_AMOY_API_KEY");
 const POLYGONSCAN_API_KEY = vars.get("POLYGONSCAN_API_KEY");
 
 /** @type import('hardhat/config').HardhatUserConfig */
@@ -39,6 +40,7 @@ module.exports = {
     apiKey: {
       // Pour la vérification, on utilise la clé associée au réseau "amoy"
       polygonAmoy: POLYGONSCAN_API_KEY,
+      polygon: POLYGONSCAN_API_KEY,
     },
     customChains: [
       {
